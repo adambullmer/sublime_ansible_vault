@@ -1,0 +1,24 @@
+{
+  "schema_version": "3.0.0",
+  "dependencies": [],
+  "packages": [{
+    "name": "Ansible Vault",
+    "details": "https://github.com/adambullmer/sublime_ansible_vault",
+    "readme": "https://raw.githubusercontent.com/adambullmer/sublime_ansible_vault/master/README.md",
+    "issues": "https://github.com/adambullmer/sublime_ansible_vault/issues",
+    "donate": "https://gratipay.com/adambullmer/",
+    "author": "adambullmer",
+    "releases": [
+      {
+        "platforms": "*",
+        "sublime_text": ">=3000",
+        "tags": true
+      }
+    ],
+    "labels": [
+      "ansible",
+      "vault",
+      "encryption"
+    ]
+  }]
+}

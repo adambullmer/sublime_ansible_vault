@@ -1,0 +1,18 @@
+Ansible Vault
+=============
+
+Pre-requisites:
+- [ansible](http://docs.ansible.com/ansible/)
+
+When you try to process an encrypted vault, you will need a password.
+You have the option of specifying you password (in plain text), or
+specifying your vault password file. If nothing is specified in the
+settings, then you will be prompted for your password every time.
+
+To peek into an encrypted vault, you can either, open your command
+pallette and search for `Ansible Vault: View` or, you can use the menu:
+`Tools` > `Ansible Vault` > `View`
+
+Viewing will open a new, read only tab. But this will not modify the
+original vault. If you want to modify a vault, you should `decrypt`
+instead.

@@ -1,0 +1,5 @@
+[
+    { "caption": "Ansible Vault: View", "command": "ansible_vault_view" },
+    { "caption": "Ansible Vault: Decrypt", "command": "ansible_vault_decrypt" },
+    { "caption": "Ansible Vault: Encrypt", "command": "ansible_vault_encrypt" }
+]

@@ -1,0 +1,15 @@
+machine:
+  python:
+    version: 3.5.1
+
+general:
+  artifacts:
+    - .tox/style-ci/flake8.txt
+
+dependencies:
+  override:
+    - pip install tox
+
+test:
+  override:
+    - tox -e style-ci

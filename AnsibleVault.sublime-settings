@@ -1,0 +1,28 @@
+{
+    /**
+     * VAULT PASSWORD OPTIONS
+     */
+    // ------------------------------------------------------------------------
+
+    /**
+     * Absolute path to your ansible vault password file.
+     * e.x.: "/Users/bob/.ansible/vault_pass.txt"
+     *
+     * to be used in ansible commands in the `--vault-password-file=<password_file>` flag
+     *
+     * This can also be specified on a project by project basis.
+     */
+    "password_file": "",
+
+    /**
+     * Plain text string of your ansible vault password.
+     *
+     * This can also be specified on a project by project basis.
+     *
+     * DISCLAIMER:
+     * You should really consider setting up a password file, however this
+     * option exposes no extra security risks than having a password file
+     * does.
+     */
+    "password": "",
+}
