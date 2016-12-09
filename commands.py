@@ -8,7 +8,7 @@ import sublime_plugin
 
 log = logging.getLogger(__name__)
 
-ANSIBLE_COMMAND_TEMPLATE = 'ansible-vault {vault_password} {command} {vault_file}'
+ANSIBLE_COMMAND_TEMPLATE = 'ansible-vault {vault_password} {command} "{vault_file}"'
 
 
 def get_setting(key, default=None):
@@ -64,7 +64,7 @@ class AnsibleVaultBase:
         password_input = password
 
         if password_from_file is True:
-            vault_password_flag = '--vault-password-file {}'.format(password)
+            vault_password_flag = '--vault-password-file "{}"'.format(password)
             password_input = ''
 
         proc = subprocess.Popen([
