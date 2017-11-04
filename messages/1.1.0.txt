@@ -1,0 +1,12 @@
+Ansible Vault
+=============
+
+Changelog
+---------
+
+- Fixed bug where the view would sometimes not update with the filesystem changes
+- Forcing YAML syntax highlighting on `View` command new file.
+
+Fixing the view update bug requires that this plugin takes the output of the ansible command and put it into the current view.
+This makes a a dirty change on the currently open file rather than modifying the filesystem.
+As a result, you will have to save the file before running the encrypt command.

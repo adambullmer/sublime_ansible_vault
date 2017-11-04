@@ -43,23 +43,23 @@ class AnsibleVaultBase:
     def on_cancel(self):
         pass
 
-    def ansible_vault(self, vault_file_path):
+    def ansible_vault(self, edit, vault_file_path):
         # Use a password if one is present
         password = get_setting('password')
         if password != '':
-            self.run_vault_command(vault_file_path, password)
+            self.run_vault_command(edit, vault_file_path, password)
             return
 
         # Use a password file is one is present
         password_file = get_setting('password_file')
         if password_file != '':
-            self.run_vault_command(vault_file_path, password_file, password_from_file=True)
+            self.run_vault_command(edit, vault_file_path, password_file, password_from_file=True)
             return
 
         # No configured password, fallback to a prompt
         self.prompt_vault_password(vault_file_path)
 
-    def run_vault_command(self, vault_file_path, password, password_from_file=False):
+    def run_vault_command(self, edit, vault_file_path, password, password_from_file=False):
         vault_password_flag = '--ask-vault-pass'
         password_input = password
 
@@ -80,10 +80,18 @@ class AnsibleVaultBase:
         )
 
         output, error = proc.communicate(input=bytearray(password_input, 'utf-8'))
+
+        if error:
+            sublime.error_message(error.decode('utf-8'))
+            return
+
         output = output.decode('utf-8')
 
         if self.open_new_tab is True:
             self.view.run_command('ansible_vault_output', {'output': output, 'title': vault_file_path})
+        else:
+            region = sublime.Region(0, self.view.size())
+            self.view.replace(edit, region, output)
 
 
 class AnsibleVaultOutputCommand(sublime_plugin.TextCommand):
@@ -91,6 +99,7 @@ class AnsibleVaultOutputCommand(sublime_plugin.TextCommand):
         output_view = self.view.window().new_file()
         output_view.set_name(title)
         output_view.insert(edit, 0, output)
+        output_view.set_syntax_file('Packages/YAML/YAML.sublime-syntax')
         output_view.set_read_only(True)
 
 
@@ -100,20 +109,20 @@ class AnsibleVaultViewCommand(AnsibleVaultBase, sublime_plugin.TextCommand):
 
     def run(self, edit):
         vault_file = self.view.file_name()
-        self.ansible_vault(vault_file)
+        self.ansible_vault(edit, vault_file)
 
 
 class AnsibleVaultDecryptCommand(AnsibleVaultBase, sublime_plugin.TextCommand):
-    command = 'decrypt'
+    command = 'decrypt --output=-'
 
     def run(self, edit):
         vault_file = self.view.file_name()
-        self.ansible_vault(vault_file)
+        self.ansible_vault(edit, vault_file)
 
 
 class AnsibleVaultEncryptCommand(AnsibleVaultBase, sublime_plugin.TextCommand):
-    command = 'encrypt'
+    command = 'encrypt --output=-'
 
     def run(self, edit):
         vault_file = self.view.file_name()
-        self.ansible_vault(vault_file)
+        self.ansible_vault(edit, vault_file)
