@@ -33,8 +33,8 @@ class AnsibleVaultBase:
     password = None
     vault_file_path = None
 
-    def prompt_vault_password(self, vault_file_path):
-        bound_vault_command = partial(self.run_vault_command, vault_file_path)
+    def prompt_vault_password(self, edit, vault_file_path):
+        bound_vault_command = partial(self.run_vault_command, edit, vault_file_path)
         self.view.window().show_input_panel('Vault Password', '', bound_vault_command, self.on_change, self.on_cancel)
 
     def on_change(self, password):
@@ -57,7 +57,7 @@ class AnsibleVaultBase:
             return
 
         # No configured password, fallback to a prompt
-        self.prompt_vault_password(vault_file_path)
+        self.prompt_vault_password(edit, vault_file_path)
 
     def run_vault_command(self, edit, vault_file_path, password, password_from_file=False):
         vault_password_flag = '--ask-vault-pass'
