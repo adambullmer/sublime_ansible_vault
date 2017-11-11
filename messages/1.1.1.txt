@@ -1,0 +1,7 @@
+Ansible Vault
+=============
+
+Changelog
+---------
+
+- Fixed bug where last change broke password prompt for all users
