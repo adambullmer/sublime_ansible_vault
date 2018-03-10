@@ -35,3 +35,18 @@ The following options are available:
 | `password_file` | Absolute path to your ansible vault [password file](http://docs.ansible.com/ansible/playbooks_vault.html#running-a-playbook-with-vault) |
 
 If none of the password options are used, then you will be prompted for your password on each vault action.
+
+### Project Specific Settings
+You can override all settings with the use of the configuration key inside of your project file.
+
+```json
+{
+    "folders": [
+        //... Folder List here
+    ],
+    "AnsibleVault": {
+        "password": "plain text password", // OR
+        "password_file": "/absolute/path/to/password_file"
+    }
+}
+```
