@@ -4,7 +4,7 @@ machine:
 
 general:
   artifacts:
-    - .tox/style-ci/flake8.txt
+    - .tox/style/flake8.txt
 
 dependencies:
   override:
@@ -12,4 +12,4 @@ dependencies:
 
 test:
   override:
-    - tox -e style-ci
+    - tox -e style
