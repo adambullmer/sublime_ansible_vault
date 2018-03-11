@@ -22,13 +22,12 @@
         "children": [{
             "caption": "Ansible Vault",
             "children": [{
-                "caption": "Settings - Default",
-                "command": "open_file",
-                "args": {"file": "${packages}/ansible_vault/AnsibleVault.sublime-settings"}
-            }, {
                 "caption": "Settings - User",
-                "command": "open_file",
-                "args": {"file": "${packages}/User/AnsibleVault.sublime-settings"}
+                "command": "edit_settings",
+                "args": {
+                    "base_file": "${packages}/ansible_vault/AnsibleVault.sublime-settings",
+                    "default": "// Ansible Vault user settings"
+                }
             }]
         }]
     }]
