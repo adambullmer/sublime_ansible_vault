@@ -1,0 +1,7 @@
+Ansible Vault
+=============
+
+Changelog
+---------
+
+- Using the newer style sublime settings command
