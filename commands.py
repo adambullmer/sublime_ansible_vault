@@ -1,18 +1,15 @@
 from functools import partial
-import logging
 from subprocess import Popen, PIPE
 
 import sublime
 import sublime_plugin
 
 
-log = logging.getLogger(__name__)
-
-ANSIBLE_COMMAND_TEMPLATE = 'ansible-vault {command} {extra_flags} {vault_password} "{vault_file}"'
-GETPASS_WARNING = "Warning: Password input may be echoed.\nVault password: "
+ANSIBLE_COMMAND_TEMPLATE = '{ansible_path}ansible-vault {command} {extra_flags} {vault_password} "{vault_file}"'
+GETPASS_WARNING = "Warning: Password input may be echoed.\nVault password:"
 
 
-class AnsibleVaultBase:
+class AnsibleVaultBaseCommand(sublime_plugin.TextCommand):
     open_new_tab = False
     command = None
     password = None
@@ -30,6 +27,14 @@ class AnsibleVaultBase:
     @property
     def password_file(self):
         return self.get_setting('password_file')
+
+    @property
+    def ansible_path(self):
+        return self.get_setting('ansible_path', '')
+
+    def run(self, edit):
+        self.vault_file_path = self.view.file_name()
+        self.ansible_vault()
 
     def debug_log(self, message):
         if self.debug:
@@ -57,8 +62,8 @@ class AnsibleVaultBase:
 
         return settings.get(key, default)
 
-    def prompt_vault_password(self, edit, vault_file_path):
-        bound_vault_command = partial(self.run_vault_command, edit, vault_file_path)
+    def prompt_vault_password(self):
+        bound_vault_command = partial(self.run_vault_command)
         self.view.window().show_input_panel('Vault Password', '', bound_vault_command, self.on_change, self.on_cancel)
 
     def on_change(self, password):
@@ -67,43 +72,50 @@ class AnsibleVaultBase:
     def on_cancel(self):
         pass
 
-    def ansible_vault(self, edit, vault_file_path):
+    def ansible_vault(self):
         # Use a password file is one is present
-        if self.password_file != '':
-            return self.run_vault_command(edit, vault_file_path, self.password_file, password_from_file=True)
+        if self.password_file == '' and self.password == '':
+            # No configured password, fallback to a prompt
+            return self.prompt_vault_password()
 
-        # Use a password if one is present
-        if self.password != '':
-            return self.run_vault_command(edit, vault_file_path, self.password)
+        return self.run_vault_command()
 
-        # No configured password, fallback to a prompt
-        self.prompt_vault_password(edit, vault_file_path)
-
-    def run_vault_command(self, edit, vault_file_path, password, password_from_file=False):
-        vault_password_flag = '--vault-password-file "%s"' % password
+    def run_vault_command(self, password=None):
+        vault_password_flag = '--ask-vault-pass'
         password_input = None
 
-        if password_from_file is False:
-            vault_password_flag = '--ask-vault-pass'
+        if self.password_file != '':
+            vault_password_flag = '--vault-password-file "%s"' % self.password_file
+        elif self.password != '':
+            password_input = self.password
+        else:
             password_input = password
 
         command = ANSIBLE_COMMAND_TEMPLATE.format(
+            ansible_path=self.ansible_path,
             vault_password=vault_password_flag,
             command=self.command,
-            vault_file=vault_file_path,
+            vault_file=self.vault_file_path,
             extra_flags=self.extra_flags,
         )
-        with Popen([command], stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True, universal_newlines=True) as proc:
-            output, error = proc.communicate(input=password_input)
-
-        if self.error_handler(error) is True:
+        output = self.exec_command(command, password_input)
+        if output is False:
             return
 
-        if self.open_new_tab is True:
-            self.view.run_command('ansible_vault_output', {'output': output, 'title': vault_file_path})
-        else:
-            region = sublime.Region(0, self.view.size())
-            self.view.replace(edit, region, output)
+        self.view.run_command('ansible_vault_output', {
+            'output': output,
+            'title': self.vault_file_path,
+            'new_file': self.open_new_tab,
+        })
+
+    def exec_command(self, command, input_=None):
+        with Popen([command], stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True, universal_newlines=True) as proc:
+            output, error = proc.communicate(input='%s\n' % input_)
+
+        if self.error_handler(error) is True:
+            return False
+
+        return output
 
     def error_handler(self, error):
         error = error.strip()
@@ -116,45 +128,49 @@ class AnsibleVaultBase:
         getpass_position = error.find(GETPASS_WARNING)
         if getpass_position > -1:
             getpass_position += len(GETPASS_WARNING)
+            error = error[getpass_position:]
 
-        if not error[getpass_position:].strip():
+        if not error.strip():
             return False
 
-        sublime.error_message(error[getpass_position:])
+        sublime.error_message(error)
         return True
 
 
 class AnsibleVaultOutputCommand(sublime_plugin.TextCommand):
-    def run(self, edit, output=None, title=None):
+    """Command to output the result of the decryption."""
+
+    def run(self, edit, output=None, title=None, new_file=False):
+        if new_file is True:
+            self.read_only_view(edit, output, title)
+        else:
+            self.same_view(edit, output)
+
+    def same_view(self, edit, output):
+        region = sublime.Region(0, self.view.size())
+        self.view.replace(edit, region, output)
+
+    def read_only_view(self, edit, output, title):
         output_view = self.view.window().new_file()
         output_view.set_name(title)
         output_view.insert(edit, 0, output)
         output_view.set_syntax_file('Packages/YAML/YAML.sublime-syntax')
         output_view.set_read_only(True)
 
+    def error_handler(self):
+        pass
 
-class AnsibleVaultViewCommand(AnsibleVaultBase, sublime_plugin.TextCommand):
+
+class AnsibleVaultViewCommand(AnsibleVaultBaseCommand):
     command = 'view'
     open_new_tab = True
 
-    def run(self, edit):
-        vault_file = self.view.file_name()
-        self.ansible_vault(edit, vault_file)
 
-
-class AnsibleVaultDecryptCommand(AnsibleVaultBase, sublime_plugin.TextCommand):
+class AnsibleVaultDecryptCommand(AnsibleVaultBaseCommand):
     command = 'decrypt'
     extra_flags = '--output=-'
 
-    def run(self, edit):
-        vault_file = self.view.file_name()
-        self.ansible_vault(edit, vault_file)
 
-
-class AnsibleVaultEncryptCommand(AnsibleVaultBase, sublime_plugin.TextCommand):
+class AnsibleVaultEncryptCommand(AnsibleVaultBaseCommand):
     command = 'encrypt'
     extra_flags = '--output=-'
-
-    def run(self, edit):
-        vault_file = self.view.file_name()
-        self.ansible_vault(edit, vault_file)

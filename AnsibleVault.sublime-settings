@@ -25,4 +25,7 @@
      * does.
      */
     "password": "",
+
+    "debug": false,
+    "ansible_path": "",
 }

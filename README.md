@@ -29,10 +29,12 @@ instead.
 ## Configuration
 The following options are available:
 
-| Option          | Description |
-|-----------------|-------------|
-| `password`      | Plain text ansible vault password. |
-| `password_file` | Absolute path to your ansible vault [password file](http://docs.ansible.com/ansible/playbooks_vault.html#running-a-playbook-with-vault) |
+| Setting         | Default | Description |
+|-----------------|---------|-------------|
+| `password`      | `''`    | Plain text ansible vault password. |
+| `password_file` | `''`    | Absolute path to your ansible vault [password file](http://docs.ansible.com/ansible/playbooks_vault.html#running-a-playbook-with-vault) |
+| `debug`         | `false` | true/false flag for extra logging into the sublime text console. |
+| `ansible_path`  | `''`    | Path override if it is desired to not use a system version of ansible-vault. Use the path to the binary directory with a trailing slash. This is useful for using the binary out of a virtualenv. |
 
 If none of the password options are used, then you will be prompted for your password on each vault action.
 
@@ -45,8 +47,10 @@ You can override all settings with the use of the configuration key inside of yo
         //... Folder List here
     ],
     "AnsibleVault": {
-        "password": "plain text password", // OR
-        "password_file": "/absolute/path/to/password_file"
+        "password_file": "/absolute/path/to/password_file", // OR
+        "password": "plain text password", // Not recommended
+        "debug": true,
+        "ansible_path": "/usr/local/bin/",
     }
 }
 ```
