@@ -1,0 +1,10 @@
+Ansible Vault
+=============
+
+Changelog
+---------
+
+- Added ability to specity ansible path
+- Added per project settings
+- Fixed bug when not using a password file
+- Preferring "password_file" over "password" settings
