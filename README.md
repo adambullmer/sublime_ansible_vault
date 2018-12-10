@@ -1,4 +1,7 @@
 # sublime_ansible_vault
+
+[![codecov](https://codecov.io/gh/adambullmer/sublime_ansible_vault/branch/master/graph/badge.svg)](https://codecov.io/gh/adambullmer/sublime_ansible_vault)
+
 Ansible vault manipulation in Sublime Text
 
 ## Pre-requisites
